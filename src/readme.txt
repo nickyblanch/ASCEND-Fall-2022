@@ -9,6 +9,9 @@ BME680 => i2p through library
 > Barometric Pressure
 > VOC gas
 
+ICM20498 => i2p
+> 9DOF 
+
 MICS5524 => Analog pin
 > VOC detection
 > En pin - digital heater enable 
