@@ -1,16 +1,17 @@
 #include <Arduino.h>
-#include "Adafruit_BME680.h"
-#include "ICM_20948.h"
+#include <SPI.h>
+#include <SD.h>
 
-#define SEALEVELPRESSURE_HPA (1013.25)
-#define MICS_5524 11
-#define ADAFRUIT_1918 11
-#define MICS_6814_NO2 11
-#define MICS_6814_CO 11
-#define MICS_6814_NH3 11
+#include "def.hpp"
+#include "BME680.hpp"
+#include "BMP280.hpp"
+#include "ICM20498.hpp"
+#include "MICS.hpp"
+#include "GUVA.hpp"
 
-Adafruit_BME680 bme;
-ICM_20948_I2C icm;
+#define SD_PIN 53U
+
+File log_file;
 
 void setup()
 {
@@ -18,86 +19,48 @@ void setup()
   Wire.begin();
   Wire.setClock(400000);
 
-  bool initialized = false;
-  while (!initialized)
+  while (!SD.begin(SD_PIN))
   {
-    icm.begin(Wire);
+    Serial.println("Failed to initialize SD Card");
+    digitalWrite(LED_PIN, HIGH);
+  }
+  Serial.println("Initialized SD Card");
+  digitalWrite(LED_PIN, LOW);
 
-    Serial.print(F("Initialization of the sensor returned: "));
-    Serial.println(icm.statusString());
-    if (icm.status != ICM_20948_Stat_Ok)
-    {
-      Serial.println("Trying again...");
-      delay(500);
-    }
-    else
-    {
-      initialized = true;
-    }
+  log_file = SD.open("log.txt", FILE_WRITE);
+
+  if (!log_file)
+  {
+    Serial.println("Failed to open/create log.txt");
+    digitalWrite(LED_PIN, HIGH);
   }
 
-  if (!bme.begin())
-  {
-    Serial.println("Could not detect BME680 sensor, please check wiring!");
-    while (true)
-      ;
-  }
+  BME::init();
+  BMP::init();
+  ICM::init();
 
-  bme.setTemperatureOversampling(BME680_OS_8X);
-  bme.setHumidityOversampling(BME680_OS_2X);
-  bme.setPressureOversampling(BME680_OS_4X);
-  bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-  bme.setGasHeater(320, 150); // 320*C for 150 ms
+  // put the meaning of values as headers in the file
+  log_file.println("millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) | bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) | UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023]");
 }
 
 void loop()
 {
-  if (icm.dataReady())
-  {
-    icm.getAGMT();
-    delay(30);
+  // Data format
+  // millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) |
+  // bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) |
+  // UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023]
+  log_file.print(millis());
+  log_file.print("|");
 
-    char *line;
-    sprintf(line, "Acc (mg) {x: %.5f, y: %.5f, z: %.5f}", icm.accX(), icm.accY(), icm.accZ());
-    sprintf(line, "Gyr (dps) {x: %.5f, y: %.5f, z: %.5f}", icm.gyrX(), icm.gyrY(), icm.gyrZ());
-    sprintf(line, "Mag (uT) {x: %.5f, y: %.5f, z: %.5f}", icm.magX(), icm.magY(), icm.magZ());
-  }
-  if (!bme.performReading())
-  {
-    Serial.println("Failed to perform reading :(");
-    return;
-  }
-  Serial.print("Temperature = ");
-  Serial.print(bme.temperature);
-  Serial.println(" *C");
+  // reading values writes to log
+  // could do something with these values if desired
+  auto bme_reading = BME::read(log_file);
+  auto bmp_reading = BMP::read(log_file);
+  auto icm_reading = ICM::read(log_file);
+  auto guva_reading = GUVA::read(log_file);
+  auto mics_reading = MICS::read(log_file);
 
-  Serial.print("Pressure = ");
-  Serial.print(bme.pressure / 100.0);
-  Serial.println(" hPa");
-
-  Serial.print("Humidity = ");
-  Serial.print(bme.humidity);
-  Serial.println(" %");
-
-  Serial.print("Gas = ");
-  Serial.print(bme.gas_resistance / 1000.0);
-  Serial.println(" KOhms");
-
-  Serial.print("Approx. Altitude = ");
-  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-  Serial.println(" m");
-
-  Serial.print("VOC: ");
-  Serial.println(analogRead(MICS_5524));
-
-  Serial.print("NO2: ");
-  Serial.println(analogRead(MICS_6814_NO2));
-
-  Serial.print("CO: ");
-  Serial.println(analogRead(MICS_6814_CO));
-
-  Serial.print("NH3: ");
-  Serial.print(analogRead(MICS_6814_NH3));
+  log_file.println(""); //newline
 
   delay(2000);
 }
