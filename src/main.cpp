@@ -8,6 +8,7 @@
 #include "ICM20498.hpp"
 #include "MICS.hpp"
 #include "GUVA.hpp"
+#include "geiger.hpp"
 
 #define SD_PIN 53U
 
@@ -38,9 +39,10 @@ void setup()
   BME::init();
   BMP::init();
   ICM::init();
+  RAD::init();
 
   // put the meaning of values as headers in the file
-  log_file.println("millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) | bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) | UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023]");
+  log_file.println("millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) | bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) | UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023] | radiation count | rad count per min | uSv/h | uSv/h error | noise events");
 }
 
 void loop()
@@ -48,7 +50,8 @@ void loop()
   // Data format
   // millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) |
   // bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) |
-  // UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023]
+  // UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023] |
+  // radiation count | rad count per min | uSv / h | uSv/h error | noise events
   log_file.print(millis());
   log_file.print("|");
 
@@ -59,8 +62,9 @@ void loop()
   auto icm_reading = ICM::read(log_file);
   auto guva_reading = GUVA::read(log_file);
   auto mics_reading = MICS::read(log_file);
+  RAD::read(log_file);
 
-  log_file.println(""); //newline
+  log_file.println(""); // newline
 
   delay(2000);
 }

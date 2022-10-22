@@ -1,12 +1,12 @@
 
+namespace MICS
+{
 #define MICS_6814_NO2 11
 #define MICS_6814_CO 11
 #define MICS_6814_NH3 11
 #define MICS_5524_VOC 11
 #define MICS_5524_EN 11
 
-namespace MICS
-{
     struct measurement
     {
         int VOC;
