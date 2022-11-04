@@ -18,7 +18,7 @@ namespace BMP
     {
         int i = 0;
         bool inited = false;
-        while (!inited && i < 10)
+        while (!inited && i < 5)
         {
             if (bmp.begin())
             {
@@ -49,11 +49,11 @@ namespace BMP
         auto alt = bmp.readAltitude(SEALEVELPRESSURE_HPA);
 
         log_file.print(temp);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(pres);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(alt);
-        log_file.print("|");
+        log_file.print(",");
 
         return {temp, pres, alt};
     }

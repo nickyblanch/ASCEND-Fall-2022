@@ -11,7 +11,7 @@ namespace GUVA
     {
         auto reading = analogRead(ADAFRUIT_1918);
         log_file.print(reading);
-        log_file.print("|");
+        log_file.print(",");
         return {reading};
     }
 }

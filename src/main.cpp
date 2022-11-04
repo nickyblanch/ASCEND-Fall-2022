@@ -23,17 +23,18 @@ void setup()
   while (!SD.begin(SD_PIN))
   {
     Serial.println("Failed to initialize SD Card");
-    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(LED_PIN, LOW);
   }
   Serial.println("Initialized SD Card");
-  digitalWrite(LED_PIN, LOW);
+  digitalWrite(LED_PIN, HIGH);
 
   log_file = SD.open("log.txt", FILE_WRITE);
 
   if (!log_file)
   {
     Serial.println("Failed to open/create log.txt");
-    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(LED_PIN, LOW);
+    delay(500);
   }
 
   BME::init();
@@ -42,18 +43,18 @@ void setup()
   RAD::init();
 
   // put the meaning of values as headers in the file
-  log_file.println("millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) | bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) | UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023] | radiation count | rad count per min | uSv/h | uSv/h error | noise events");
+  log_file.println("millis,bmetemp(*C),bmepres(Pa),bmehum(%),bmegas_res(KOhm),bmealt(m),bmptemp(*C),bmppres(PA),bmpalt(m),acc (mg),gyr (deg/sec),mag (uT),UV [0-1023],VOC[0-1023],NO2[0-1023],CO[0-1023],NH3[0-1023],radiation count,rad count per min,uSv/h,uSv/h error,noise events");
 }
 
 void loop()
 {
   // Data format
-  // millis | bmetemp(*C) | bmepres(Pa) | bmehum(%) | bmegas_res(KOhm) | bmealt(m) |
-  // bmptemp(*C) | bmppres(PA) | bmpalt(m) | acc (mg) | gyr (deg/sec) | mag (uT) |
-  // UV [0, 1023] | VOC[0, 1023] | NO2[0, 1023] | CO[0, 1023] | NH3[0, 1023] |
-  // radiation count | rad count per min | uSv / h | uSv/h error | noise events
+  // millis , bmetemp(*C) , bmepres(Pa) , bmehum(%) , bmegas_res(KOhm) , bmealt(m) ,
+  // bmptemp(*C) , bmppres(PA) , bmpalt(m) , acc (mg) , gyr (deg/sec) , mag (uT) ,
+  // UV [0, 1023] , VOC[0, 1023] , NO2[0, 1023] , CO[0, 1023] , NH3[0, 1023] ,
+  // radiation count , rad count per min , uSv / h , uSv/h error , noise events
   log_file.print(millis());
-  log_file.print("|");
+  log_file.print(",");
 
   // reading values writes to log
   // could do something with these values if desired

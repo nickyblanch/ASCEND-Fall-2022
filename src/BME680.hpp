@@ -20,7 +20,7 @@ namespace BME
     {
         int i = 0;
         bool inited = false;
-        while (!inited && i < 10)
+        while (!inited && i < 5)
         {
             if (bme.begin())
             {
@@ -49,20 +49,20 @@ namespace BME
         if (!bme.performReading())
         {
             Serial.println("Failed to perform reading :(");
-            log_file.print("N|N|N|N|N|");
+            log_file.print("N,N,N,N,N,");
             return {};
         }
 
         log_file.print(bme.temperature);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(bme.pressure);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(bme.humidity);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(bme.gas_resistance / 1000.0);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-        log_file.print("|");
+        log_file.print(",");
 
         return {
             bme.temperature,

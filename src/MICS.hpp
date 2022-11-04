@@ -24,13 +24,13 @@ namespace MICS
             analogRead(MICS_6814_NH3)};
 
         log_file.print(r.VOC);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(r.NO2);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(r.CO);
-        log_file.print("|");
+        log_file.print(",");
         log_file.print(r.NH3);
-        log_file.print("|");
+        log_file.print(",");
 
         return r;
     }
