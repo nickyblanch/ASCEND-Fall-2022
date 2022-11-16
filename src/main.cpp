@@ -16,6 +16,7 @@ File log_file;
 
 void setup()
 {
+  
   Serial.begin(9600);
   Wire.begin();
   Wire.setClock(400000);
@@ -63,9 +64,19 @@ void loop()
   auto icm_reading = ICM::read(log_file);
   auto guva_reading = GUVA::read(log_file);
   auto mics_reading = MICS::read(log_file);
-  RAD::read(log_file);
+  //RAD::read(log_file);
 
   log_file.println(""); // newline
+
+  log_file.close();
+  log_file = SD.open("log.txt", FILE_WRITE);
+
+  if (!log_file)
+  {
+    Serial.println("Failed to open/create log.txt");
+    digitalWrite(LED_PIN, LOW);
+    delay(500);
+  }
 
   delay(2000);
 }
